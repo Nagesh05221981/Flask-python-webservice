@@ -1,0 +1,230 @@
+openapi: 3.0.0
+
+info:
+  title: My Service API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+            example:
+              username: swagger_user
+              email: swagger_user@example.com
+              password: swaggerpass123
+      responses:
+        "201":
+          description: Created
+
+  /auth/login:
+    post:
+      summary: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            example:
+              username: testrunner
+              password: testpass123
+      responses:
+        "200":
+          description: OK
+
+  /auth/oauth/login:
+    get:
+      summary: Get dummy OAuth authorization URL
+      responses:
+        "200":
+          description: OK
+
+  /auth/oauth/callback:
+    post:
+      summary: Exchange OAuth code for token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+            example:
+              code: dummy-auth-code-123
+      responses:
+        "200":
+          description: OK
+
+  /auth/me:
+    get:
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: OK
+
+  /users/:
+    get:
+      summary: List all users
+      responses:
+        "200":
+          description: OK
+
+  /users/{user_id}:
+    get:
+      summary: Get user by ID
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: OK
+    put:
+      summary: Update a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+            example:
+              email: updated@example.com
+      responses:
+        "200":
+          description: OK
+    delete:
+      summary: Delete a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "204":
+          description: No Content
+
+  /products/:
+    get:
+      summary: List all products
+      responses:
+        "200":
+          description: OK
+    post:
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                in_stock:
+                  type: boolean
+            example:
+              name: Test Widget
+              description: A test product
+              price: 19.99
+              in_stock: true
+      responses:
+        "201":
+          description: Created
+
+  /products/{product_id}:
+    get:
+      summary: Get product by ID
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: OK
+    put:
+      summary: Update a product
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: number
+            example:
+              price: 29.99
+      responses:
+        "200":
+          description: OK
+    delete:
+      summary: Delete a product
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "204":
+          description: No Content
