@@ -25,6 +25,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Allure CLI
+        run: |
+          curl -sL https://github.com/allure-framework/allure2/releases/download/2.30.0/allure-2.30.0.tgz | tar -xz -C /opt/
+          echo "/opt/allure-2.30.0/bin" >> $GITHUB_PATH
+
       - name: Install service dependencies
         run: pip install -r requirements.txt
 
@@ -42,25 +47,14 @@ jobs:
           pytest -v --tb=short --alluredir=reports/allure-results --junitxml=reports/results.xml
         continue-on-error: true
 
-      - name: Install Allure CLI
-        run: |
-          curl -sL https://github.com/allure-framework/allure2/releases/download/2.30.0/allure-2.30.0.tgz | tar -xz
-          echo "$PWD/allure-2.30.0/bin" >> $GITHUB_PATH
-
       - name: Get Allure history
-        uses: actions/checkout@v4
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: allure-history
-
-      - name: Copy previous history
-        if: always()
         continue-on-error: true
         run: |
+          git fetch origin gh-pages --depth=1 || true
+          git checkout origin/gh-pages -- history 2>/dev/null || true
           mkdir -p api_automation/reports/allure-results/history
-          cp -r allure-history/history/* api_automation/reports/allure-results/history/ 2>/dev/null || true
+          cp -r history/* api_automation/reports/allure-results/history/ 2>/dev/null || true
+          rm -rf history
 
       - name: Generate Allure report
         if: always()
