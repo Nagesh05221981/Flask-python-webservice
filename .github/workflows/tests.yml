@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -41,21 +41,29 @@ jobs:
           pytest -v --tb=short --alluredir=reports/allure-results --junitxml=reports/results.xml
         continue-on-error: true
 
+      - name: Install Allure CLI
+        run: |
+          curl -sL https://github.com/allure-framework/allure2/releases/download/2.30.0/allure-2.30.0.tgz | tar -xz
+          echo "$PWD/allure-2.30.0/bin" >> $GITHUB_PATH
+
       - name: Get Allure history
         uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
           ref: gh-pages
-          path: gh-pages
+          path: allure-history
+
+      - name: Copy previous history
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p api_automation/reports/allure-results/history
+          cp -r allure-history/history/* api_automation/reports/allure-results/history/ 2>/dev/null || true
 
       - name: Generate Allure report
-        uses: simple-elf/allure-report-action@v1.9
         if: always()
-        with:
-          allure_results: api_automation/reports/allure-results
-          allure_history: allure-history
-          keep_reports: 20
+        run: allure generate api_automation/reports/allure-results -o allure-report --clean
 
       - name: Deploy to GitHub Pages
         if: always()
@@ -63,7 +71,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
+          publish_dir: allure-report
 
       - name: Upload test reports
         if: always()
