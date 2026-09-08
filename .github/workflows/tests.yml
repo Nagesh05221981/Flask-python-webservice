@@ -25,6 +25,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up Java (required by Allure CLI)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Install Allure CLI
         run: |
           curl -sL https://github.com/allure-framework/allure2/releases/download/2.30.0/allure-2.30.0.tgz | tar -xz -C /opt/
@@ -50,15 +56,23 @@ jobs:
       - name: Get Allure history
         continue-on-error: true
         run: |
-          git fetch origin gh-pages --depth=1 || true
-          git checkout origin/gh-pages -- history 2>/dev/null || true
-          mkdir -p api_automation/reports/allure-results/history
-          cp -r history/* api_automation/reports/allure-results/history/ 2>/dev/null || true
-          rm -rf history
+          git fetch origin gh-pages --depth=1 2>/dev/null || true
+          if git rev-parse origin/gh-pages >/dev/null 2>&1; then
+            git checkout origin/gh-pages -- history 2>/dev/null || true
+            mkdir -p api_automation/reports/allure-results/history
+            cp -r history/* api_automation/reports/allure-results/history/ 2>/dev/null || true
+            rm -rf history
+          fi
 
       - name: Generate Allure report
         if: always()
-        run: allure generate api_automation/reports/allure-results -o allure-report --clean
+        run: |
+          allure generate api_automation/reports/allure-results -o allure-report --clean
+          echo "Allure report generated with $(ls allure-report/data/test-cases/ | wc -l) test cases"
+
+      - name: Add .nojekyll
+        if: always()
+        run: touch allure-report/.nojekyll
 
       - name: Deploy to GitHub Pages
         if: always()
@@ -67,6 +81,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-report
+
+      - name: Print report URL
+        if: always()
+        run: echo "📊 Allure Report -> https://nagesh05221981.github.io/Flask-python-webservice/"
 
       - name: Upload test reports
         if: always()
